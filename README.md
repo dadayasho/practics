@@ -20,7 +20,7 @@ docker-compose up -d
 
 Далее будут рассмотрены особенности скана для Python и Java(Gradle).
 
-## Python
+## **Python**
 
 ### Через CLI
 
@@ -73,8 +73,9 @@ sonar.login=<sonarqube_token>
 
 **Просмотреть результат в самом sonarqube.**
 
-## Java
+## **Java**
 
+Для анализа проектов, используюших gradle
 
 
 
