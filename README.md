@@ -60,7 +60,7 @@ sonar.host.url=<sonarqube_url>
 sonar.login=<sonarqube_token>
 ```
 
-Где <project_key> - ключ репозитория \
+<project_key> - ключ репозитория \
 	<project_name> - название проекта \
     <sonarqube_url> url - ссылка с портом на вебсервер sonarqube \
     <generated_token> - сгенерированный токен
