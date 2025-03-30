@@ -73,4 +73,8 @@ sonar.login=<sonarqube_token>
 
 **Просмотреть результат в самом sonarqube.**
 
+## Java
+
+
+
 
