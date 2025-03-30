@@ -16,13 +16,15 @@ docker-compose up -d
 
 5)Далее нажать кнопку "Locally", сгенерировать токен, перейти в CLI в хранилище проекта и начать скан.
 
+6) Скачать через терминал sonar-scanner
+
 Далее будут рассмотрены особенности скана для Python и Java(Gradle).
 
 ## Python
 
 ### Через CLI
 
-В терминале с разделе проекта запустить команду 
+В терминале в разделе проекта запустить команду 
 ```
 sonar-scanner \
   -Dsonar.projectKey=<project_key> \
@@ -65,4 +67,8 @@ sonar.login=<sonarqube_token>
     <sonarqube_url> url - ссылка с портом на вебсервер sonarqube \
     <generated_token> - сгенерированный токен
 
-**Далее просто просмотреть результат в самом sonarqube.**
+Далее запустить команду `sonar-scanner`
+
+**Просмотреть результат в самом sonarqube.**
+
+
