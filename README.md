@@ -5,7 +5,7 @@
 
 2)Выгрузив репозиторий, поднять docker-compose командой
 
-```
+```bash
 docker-compose up -d
 ```
 В данном docker-compose файле содержится sonarqube и postgres конфигурация.
@@ -25,7 +25,7 @@ docker-compose up -d
 ### Через CLI
 
 В терминале в разделе проекта запустить команду 
-```
+```bash
 sonar-scanner \
   -Dsonar.projectKey=<project_key> \
   -Dsonar.sources=. \ # указывает на корневой репозиторий
@@ -41,7 +41,7 @@ sonar-scanner \
 
 Создать файл sonar-project.properties в каталоге проекта
 
-```
+```bash
 # Ключ проекта (уникальный)
 sonar.projectKey=<project_key>
 sonar.projectName=<project_name>
