@@ -34,9 +34,9 @@ sonar-scanner \
 ```
 
 
-<project_key> - ключ репозитория \
-    <sonarqube_url> - url ссылка с портом на вебсервер sonarqube \
-    <generated_token> - сгенерированный токен 
+`<project_key>` - ключ репозитория \
+    `<sonarqube_url>` - url ссылка с портом на вебсервер sonarqube \
+    `<generated_token>` - сгенерированный токен 
 
 ### Через sonar-project.properties
 
@@ -64,10 +64,10 @@ sonar.login=<sonarqube_token>
 ```
 
 
-<project_key> - ключ репозитория \
-<project_name> - название проекта \
-<sonarqube_url> url - ссылка с портом на вебсервер sonarqube \
-<generated_token> - сгенерированный токен
+`<project_key>` - ключ репозитория \
+`<project_name>` - название проекта \
+`<sonarqube_url>` - ссылка с портом на вебсервер sonarqube \
+`<generated_token>` - сгенерированный токен
 
 Далее запустить команду `sonar-scanner`
 
