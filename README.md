@@ -65,9 +65,9 @@ sonar.login=<sonarqube_token>
 
 
 <project_key> - ключ репозитория \
-	<project_name> - название проекта \
-    <sonarqube_url> url - ссылка с портом на вебсервер sonarqube \
-    <generated_token> - сгенерированный токен
+<project_name> - название проекта \
+<sonarqube_url> url - ссылка с портом на вебсервер sonarqube \
+<generated_token> - сгенерированный токен
 
 Далее запустить команду `sonar-scanner`
 
@@ -75,7 +75,63 @@ sonar.login=<sonarqube_token>
 
 ## **Java**
 
-Для анализа проектов, используюших gradle
+Для анализа проектов, используюших Gradle следует предпринять следующие шаги:
+
+Добавить строки в build.gradle:
+
+```
+plugins {
+    id 'jacoco'                          
+    id "org.sonarqube" version "3.5.0.2730" 
+}
+```
+
+где `id 'jacoco'` - плагин покрытия тестами \
+`id "org.sonarqube" version "3.5.0.2730"` - указание на плагин sonarqube (Версия подходит для текущей сборки).
+
+Так же добавить генерацию отчета Jacoco после тестов.
+
+```
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true  
+    }
+}
+```
+
+И самое главное - добавить sonar properties
+
+```
+sonar {
+    properties {
+        property "sonar.projectKey", "project_key" # обязательно
+        property "sonar.projectName", "project_name"
+        property "sonar.projectVersion", "1.0"
+        property "sonar.sources", "src_folder" # обязательно
+        property "sonar.tests", "src_test"
+        property "sonar.java.binaries", "build/classes/java/main" 
+        property "sonar.language", "java"
+        property "sonar.host.url", "project_url" # обязательно
+        property "sonar.login", "<generated_token>" # обязательно
+
+	property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml" # обязательно, при использовании Jacoco
+    }
+```
+где `project_key` - ключ проекта \
+`project_name` - имя проекта \
+`src_folfder`  - ссылка на расположение исходного кода\
+`src_test` - ссылка на тесты \
+`project_url` - ссылка с портом на вебсервер sonarqube \
+`generated_token` - сгенерированный токен.
+
+После конфигурации *`build.gradle`* запустить `./gradlew clean build sonar`.
+
+
+
 
 
 
