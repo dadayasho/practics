@@ -1,0 +1,84 @@
+- name: "Установка Docker и Docker Compose"
+  hosts: localhost
+  become: yes  # Все задачи выполняются с правами root
+
+  tasks:
+    # 1. Обновление списка пакетов и системы
+    - name: "Обновление системы"
+      apt:
+        update_cache: yes
+        upgrade: dist
+        autoremove: yes
+        cache_valid_time: 3600  # Не обновлять кэш, если он обновлялся в течение часа
+
+    # 2. Установка зависимостей
+    - name: "Установка необходимых пакетов"
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+
+    # 3. Добавление GPG-ключа Docker
+    - name: "Добавить Docker GPG-ключ"
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    # 4. Добавление официального репозитория Docker
+    - name: "Добавить репозиторий Docker"
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    # 5. Обновление кэша после добавления репозитория
+    - name: "Обновить кэш пакетов"
+      apt:
+        update_cache: yes
+
+    # 6. Установка Docker
+    - name: "Установить Docker CE"
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        force_apt_get: yes  # Явное использование apt-get
+
+    # 7. Настройка службы Docker
+    - name: "Запустить и включить Docker"
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # 8. Установка Docker Compose
+    - name: "Установить Docker Compose"
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'  # Права: владелец - полный доступ, остальные - чтение и выполнение
+      register: download_result
+      retries: 3  # Повторить при ошибке загрузки
+      delay: 10  # Пауза между попытками
+
+    # 9. Проверка установки
+    - name: "Проверить версию Docker"
+      command: docker --version
+      register: docker_version
+      changed_when: false  # Задача никогда не меняет систему
+
+    - name: "Проверить версию Docker Compose"
+      command: docker-compose --version
+      register: compose_version
+      changed_when: false
+
+    - name: "Вывести информацию"
+      debug:
+        msg:
+          - "Docker: {{ docker_version.stdout }}"
+          - "Docker Compose: {{ compose_version.stdout }}"
