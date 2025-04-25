@@ -1,15 +1,14 @@
----
 - name: "Установка Docker и Docker Compose"
   hosts: localhost
-  become: yes  
-  tasks:
+  become: true
 
-    - name: "Обновление системы"
+  tasks:
+    - name: "Обновление пакетов"
       apt:
         update_cache: yes
         upgrade: dist
         autoremove: yes
-        cache_valid_time: 3600 
+        cache_valid_time: 3600
 
     - name: "Установка необходимых пакетов"
       apt:
@@ -26,14 +25,19 @@
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: "Добавить репозиторий Docker"
-      apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    - name: "Добавить репозиторий"
+      apt_repository: 
+        repo: deb https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} stable
         state: present
+        update_cache: yes    
 
     - name: "Обновить кэш пакетов"
       apt:
         update_cache: yes
+      register: apt_cache_updated
+      until: apt_cache_updated is succeeded
+      retries: 3
+      delay: 10
 
     - name: "Установить Docker CE"
       apt:
@@ -42,7 +46,7 @@
           - docker-ce-cli
           - containerd.io
         state: present
-        force_apt_get: yes
+        force_apt_get: yes 
 
     - name: "Запустить и включить Docker"
       service:
@@ -50,27 +54,27 @@
         state: started
         enabled: yes
 
+  
     - name: "Установить Docker Compose"
       get_url:
-        url: https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-linux-x86_64
+        url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
         dest: /usr/local/bin/docker-compose
-        mode: '0755'  
-      register: download_result
-      retries: 3 
-      delay: 10  
-
-    - name: "Проверить версию Docker"
+        mode: '0755'
+    
+    - name: "Проверить, что Docker установлен"
       command: docker --version
-      register: docker_version
-      changed_when: false 
-
-    - name: "Проверить версию Docker Compose"
-      command: docker-compose --version
-      register: compose_version
+      register: docker_check
       changed_when: false
+      ignore_errors: yes 
 
-    - name: "Вывести информацию"
+    - name: "Проверить, что Docker Compose установлен"
+      command: docker-compose --version
+      register: compose_check
+      changed_when: false
+      ignore_errors: yes
+
+    - name: "Отчёт об установке"
       debug:
         msg:
-          - "Docker: {{ docker_version.stdout }}"
-          - "Docker Compose: {{ compose_version.stdout }}"
+          - "Docker: {{ 'Установлен (' + docker_check.stdout + ')' if docker_check is succeeded else 'Не установлен' }}"
+          - "Docker Compose: {{ 'Установлен (' + compose_check.stdout + ')' if compose_check is succeeded else 'Не установлен' }}"

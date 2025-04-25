@@ -1,0 +1,38 @@
+---
+- name: "Установка Jenkins"
+  hosts: localhost
+  become: yes
+  
+  tasks:
+  - name: "Добавить Jenkins GPG-ключ"
+    ansible.builtin.apt_key:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+      state: present
+
+  - name: "Добавить репозиторий"
+    apt_repository:
+      repo: deb https://pkg.jenkins.io/debian-stable binary/
+      state: present
+      filename: jenkins
+
+  - name: "Обновить кэш и установить Jenkins"
+    ansible.builtin.apt:
+      name: jenkins
+      state: present
+
+  - name: "Удостоверимся, что Jenkins запущен"
+    ansible.builtin.systemd:
+      name: jenkins
+      enabled: yes
+      state: started
+
+  - name: "Проверка версии Jenkins"
+    command: grep "version>" /var/lib/jenkins/config.xml
+    register: jenkins_check
+    changed_when: false
+    ignore_errors: yes
+
+  - name: "Отчёт об установке"
+    debug:
+      msg:
+        - "Jenkins: {{ 'Установлен (' + jenkins_check.stdout + ')' if jenkins_check is succeeded else 'Не установлен' }}"

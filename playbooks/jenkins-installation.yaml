@@ -1,5 +1,0 @@
-- name: Jenkins installation
-  hosts: localhost
-  become: true
-    - tasks:
-  
