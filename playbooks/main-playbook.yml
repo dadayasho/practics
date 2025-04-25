@@ -1,4 +1,4 @@
 - name: "Запуск плейбука Docker"
   import_playbook: docker-playbook.yml
 - name: "Запуск плейбука Jenkins"
-  import_playbook: jenkins-playbook.yml
+  import_playbook: jenkins-playbook.yaml
