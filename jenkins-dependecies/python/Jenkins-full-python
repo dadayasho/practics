@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+    environment {
+        TRIVY_IMAGE = "aquasec/trivy"  // Trivy для проверки уязвимостей
+        DOCKER_IMAGE_NAME = "deposit-service"  // 🔹 Название Docker-образа
+        DOCKERFILE_PATH = "./Dockerfile"  // 🔹 Путь к Dockerfile в репозитории
+    }
+    stages {
+        stage('Git Repository Clone') {
+            steps {
+                script {
+                    try {
+                        // Клонирование репозитория из Git
+                        git url: 'https://github.com/anomaliyamai/test_task', branch: 'main'
+                    } catch (Exception e) {
+                        // Вывод ошибки, если клонирование не удалось
+                        error "Failure with cloning repository: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Secret Scanning') {
+            steps {
+                script {
+                    // Запускаем сканирование и игнорируем код возврата
+                    sh(
+                        script: '''
+                            docker run --rm \
+                            -v ${WORKSPACE}:/src \
+                            zricethezav/gitleaks:latest \
+                            detect \
+                                --source="/src" \
+                                --report-path="/src/gitleaks_report.json" \
+                                --exit-code 0  
+                        ''',
+                        returnStatus: true  
+                    )
+        
+                    // Всегда сохраняем отчёт (даже если он пустой)
+                    archiveArtifacts artifacts: 'gitleaks_report.json', allowEmptyArchive: true
+                }
+            }
+        }
+
+        
+
+        stage('Scan Repository with Trivy') {
+            steps {
+                script {
+                    // 🔹 Запускаем Trivy и сохраняем отчет в JSON
+                    sh '''
+                        docker run --rm --network host -v $(pwd):/repo aquasec/trivy fs --severity HIGH,CRITICAL --format json -o trivy_report.json /repo || true
+                    '''
+
+                    // 🔹 Архивируем отчет как артефакт
+                    archiveArtifacts artifacts: 'trivy_report.json', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // 🔹 Собираем Docker-образ из Dockerfile
+                    sh 'docker build -t $DOCKER_IMAGE_NAME -f $DOCKERFILE_PATH .'
+                }
+            }
+        }
+
+        stage('DAST: Trivy') {
+            steps {
+                script {
+                    // 🔹 Запускаем Trivy и сохраняем отчет в JSON
+                    sh '''
+                        docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock \
+                        $TRIVY_IMAGE image --severity HIGH,CRITICAL --format json -o trivy_image_report.json $DOCKER_IMAGE_NAME || true
+                    '''
+
+                    // 🔹 Архивируем отчет как артефакт
+                    archiveArtifacts artifacts: 'trivy_image_report.json', allowEmptyArchive: true
+                }
+            }
+        }
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    
+                    def scannerHome = tool 'sonar-scanner';
+                    withSonarQubeEnv('sonarqube-server') {
+                        sh "/opt/sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        stage('SAST: Semgrep') {
+            steps {
+                script {
+                    sh '''
+                        # Запуск в Docker (не требует установки на агент)
+                        docker run --rm -v "${WORKSPACE}:/src" returntocorp/semgrep semgrep scan \
+                        --config=auto --json -o semgrep_report.json
+                    '''
+                    archiveArtifacts artifacts: 'semgrep_report.json', allowEmptyArchive: true
+                }
+            }
+        }
+    }
+}
