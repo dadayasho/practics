@@ -1,22 +1,56 @@
-# How to up the service
+# Как пользоваться сервисом
 Репозиторий для производственной практики
 
 1) Сделать git clone git@github.com:dadayasho/practics.git
 
-2) Выгрузив репозиторий, поднять docker-compose командой
+2) Выгрузив репозиторий
 
-```bash
-docker-compose up -d
-```
+3) Установить Docker и Docker compose через [ansible-playbook](playbooks/docker-playbook.yml)
+
+4) После установки следует поднять [Docker compose файл](docker-compose.yml) через команду:
+
+'''bash
+docker compose up -d
+'''
+
 *В данном docker-compose файле содержится sonarqube и postgres конфигурация.*
  
-3) После поднятия docker-compose перейти по указанному url и порту.
+После поднятия docker-compose перейти по указанному url и порту.
+Авторизоваться -> Перейти во вкладку **"Projects"** -> **"Create project"** -> **"Manually"** -> Ввести имя проекта и ключ, по которому будет идти обрпащение при сканирвоании.
+Далее нажать кнопку **"Locally"**, сгенерировать токен, перейти в CLI в хранилище проекта и начать скан.
+Скачать через терминал sonar-scanner или же с [официального сайта](https://docs.sonarsource.com/sonarqube-server/10.8/analyzing-source-code/scanners/sonarscanner/), распаковав архив в папку /opt.
 
-4) Авторизоваться -> Перейти во вкладку "Projects" -> "Create project" -> "Manually" -> Ввести имя проекта и ключ, по которому будет идти обрпащение при сканирвоании.
+'''bash
+cd /opt
 
-5) Далее нажать кнопку "Locally", сгенерировать токен, перейти в CLI в хранилище проекта и начать скан.
+sudo unzip /путь/к/скачанному/архиву/sonar-scanner-*.zip
 
-6) Скачать через терминал sonar-scanner
+export PATH="$PATH:/opt/sonar-scanner/bin"
+'''
+
+6) Установить Jenkins через [Jenkins ansible файл](playbooks/jenkins-playbook.yaml)
+
+После установки авторизоваться и установить плагины. Следует перейти в **"Manage Jnekins"** -> **"Plugins"** -> **"Advanced settings"** и вставить [плагины](jenkins-dependecies/plugins) во вкладке **"Deploy plugins"**
+
+Найдите раздел **SonarQube servers** → нажмите **Add SonarQube**.
+Заполните поля: 
+Name: Произвольное имя (например, SonarQube-Prod).
+Server URL: Адрес вашего SonarQube (например, http://localhost:9000).
+Server authentication token:
+Выберите Secret text → вставьте скопированный токен из SonarQube.
+Нажмите Add, затем выберите токен из списка.
+Сохраните настройки.
+
+Настройка SonarScanner Tool в Jenkins
+Перейдите в Manage Jenkins → Tools → SonarQube Scanner.
+Нажмите **Add SonarQube Scanner** → выберите **Install automatically**.
+Укажите путь к SonarScanner:
+В разделе Global Tool Configuration:
+Name: SonarScanner (или другое имя).
+SONAR_RUNNER_HOME: Укажите путь к папке SonarScanner (если установлен вручную).
+Либо оставьте галочку Install automatically, чтобы Jenkins сам загрузил утилиту.
+
+7) Далее воспольоваться созданными [пайплайнами](jenkins-dependecies/jobs/python) и приступать к работе.
 
 Далее будут рассмотрены особенности скана для Python и Java(Gradle).
 
