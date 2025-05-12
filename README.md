@@ -9,9 +9,9 @@
 
 4) После установки следует поднять [Docker compose файл](docker-compose.yml) через команду:
 
-'''bash
+```bash
 docker compose up -d
-'''
+```
 
 *В данном docker-compose файле содержится sonarqube и postgres конфигурация.*
  
@@ -20,13 +20,13 @@ docker compose up -d
 Далее нажать кнопку **"Locally"**, сгенерировать токен, перейти в CLI в хранилище проекта и начать скан.
 Скачать через терминал sonar-scanner или же с [официального сайта](https://docs.sonarsource.com/sonarqube-server/10.8/analyzing-source-code/scanners/sonarscanner/), распаковав архив в папку /opt.
 
-'''bash
+```bash
 cd /opt
 
 sudo unzip /путь/к/скачанному/архиву/sonar-scanner-*.zip
 
 export PATH="$PATH:/opt/sonar-scanner/bin"
-'''
+```
 
 6) Установить Jenkins через [Jenkins ansible файл](playbooks/jenkins-playbook.yaml)
 
